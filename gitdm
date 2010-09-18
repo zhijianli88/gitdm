@@ -168,7 +168,6 @@ def grabpatch():
 
     p = patch(m.group (1))
     NextLine = sys.stdin.readline ()
-    ignore = (FileFilter is not None)
     while NextLine:
         Line = NextLine
         #
@@ -243,20 +242,21 @@ def grabpatch():
                 sys.stderr.write ('Funky date: %s\n' % p.date)
                 p.date = Today
             continue
-        #
-        # If we have a file filter, check for file lines.
-        #
-        if FileFilter:
-            ignore = ApplyFileFilter (Line, ignore)
-        #
-        # OK, maybe it's part of the diff itself.
-        #
-        if not ignore:
-            if Padd.match (Line):
-                p.added += 1
+
+        # Get the statistics (lines added/removes) using numstats
+        # and without requiring a diff (--numstat instead -p)
+        m = Pnumstat.match (Line)
+        if m:
+            # If we have a file filter, check for file lines.
+            if FileFilter and not FileFilter.search (m.group(3)):
                 continue
-            if Prem.match (Line):
-                p.removed += 1
+
+            try:
+                p.added += int(m.group(1))
+                p.removed += int(m.group(2))
+            except ValueError:
+                # A binary file (image, etc.) is marked with '-'
+                pass
 
     if '@' in p.author.name:
         GripeAboutAuthorName (p.author.name)
@@ -268,27 +268,6 @@ def GripeAboutAuthorName (name):
         return
     GripedAuthorNames.append (name)
     print '%s is an author name, probably not what you want' % (name)
-
-def ApplyFileFilter (line, ignore):
-    #
-    # If this is the first file line (--- a/), set ignore one way
-    # or the other.
-    #
-    m = Pfilea.match (line)
-    if m:
-        file = m.group (1)
-        if FileFilter.search (file):
-            return 0
-        return 1
-    #
-    # For the second line, we can turn ignore off, but not on
-    #
-    m = Pfileb.match (line)
-    if m:
-        file = m.group (1)
-        if FileFilter.search (file):
-            return 0
-    return ignore
 
 #
 # If this patch is signed off by both Andrew Morton and Linus Torvalds,

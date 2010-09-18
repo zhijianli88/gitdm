@@ -18,7 +18,7 @@ RUNNING GITDM
 
 Run it like this:
 
-   git log -p -M [details] | gitdm [options]
+   git log --numstat -M [details] | gitdm [options]
 
 The [details] tell git which changesets are of interest; the [options] can
 be:
@@ -60,7 +60,7 @@ be:
 A typical command line used to generate the "who write 2.6.x" LWN articles
 looks like:
 
-    git log -p -M v2.6.19..v2.6.20 | \
+    git log --numstat -M v2.6.19..v2.6.20 | \
 	gitdm -u -s -a -o results -h results.html
 
 
