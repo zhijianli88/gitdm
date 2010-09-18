@@ -11,7 +11,7 @@
 # Public License, version 2.
 
 
-import database, csv, ConfigFile, reports
+import database, csvdump, ConfigFile, reports
 import getopt, datetime
 import os, re, sys, rfc822, string
 from patterns import *
@@ -368,7 +368,7 @@ while (1):
         for hacker in p.reports:
             hacker.addreport (p)
     CSCount += 1
-    csv.AccumulatePatch (p)
+    csvdump.AccumulatePatch (p)
 print >> sys.stderr, 'Grabbing changesets...done       '
 
 if DumpDB:
@@ -396,9 +396,9 @@ if DateStats:
     PrintDateStats ()
     sys.exit(0)
 
-csv.OutputCSV (CSVFile)
+csvdump.OutputCSV (CSVFile)
 if CSVFile is not None:
-        CSVFile.close ()
+    CSVFile.close ()
 
 if DevReports:
     reports.DevReports (hlist, TotalChanged, CSCount, TotalRemoved)
