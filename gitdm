@@ -35,6 +35,7 @@ DateStats = 0
 AuthorSOBs = 1
 FileFilter = None
 CSVFile = None
+CSVPrefix = None
 AkpmOverLt = 0
 DumpDB = 0
 CFName = 'gitdm.config'
@@ -51,6 +52,7 @@ DirName = ''
 # -h hfile	HTML output to hfile
 # -l count	Maximum length for output lists
 # -o file	File for text output
+# -p prefix Prefix for CSV output
 # -r pattern	Restrict to files matching pattern
 # -s		Ignore author SOB lines
 # -u		Map unknown employers to '(Unknown)'
@@ -60,9 +62,10 @@ DirName = ''
 def ParseOpts ():
     global MapUnknown, DevReports
     global DateStats, AuthorSOBs, FileFilter, AkpmOverLt, DumpDB
-    global CFName, CSVFile, DirName
+    global CFName, CSVFile, CSVPrefix, DirName
 
-    opts, rest = getopt.getopt (sys.argv[1:], 'ab:dc:Dh:l:o:r:sux:z')
+    opts, rest = getopt.getopt (sys.argv[1:], 'ab:dc:Dh:l:o:p:r:sux:z')
+
     for opt in opts:
         if opt[0] == '-a':
             AkpmOverLt = 1
@@ -80,6 +83,8 @@ def ParseOpts ():
             reports.SetMaxList (int (opt[1]))
         elif opt[0] == '-o':
             reports.SetOutput (open (opt[1], 'w'))
+        elif opt[0] == '-p':
+            CSVPrefix = opt[1]
         elif opt[0] == '-r':
             print 'Filter on "%s"' % (opt[1])
             FileFilter = re.compile (opt[1])
@@ -374,6 +379,7 @@ for logpatch in patches:
             hacker.addreport (p)
         CSCount += 1
     csvdump.AccumulatePatch (p)
+    csvdump.store_patch (p)
 print >> sys.stderr, 'Grabbing changesets...done       '
 
 if DumpDB:
@@ -401,8 +407,11 @@ if DateStats:
     PrintDateStats ()
     sys.exit(0)
 
-csvdump.OutputCSV (CSVFile)
-if CSVFile is not None:
+if CSVPrefix:
+    csvdump.save_csv (CSVPrefix)
+
+if CSVFile:
+    csvdump.OutputCSV (CSVFile)
     CSVFile.close ()
 
 if DevReports:
